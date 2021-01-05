@@ -577,17 +577,14 @@ static int devopen(void)
     return 1;
   }
 
-  /* open the port */
-  //g_fd = open("/dev/ttyS0", O_RDWR);
-
-  if (!g_fd)
-    g_fd = open(g_dev, O_RDWR);
   //fcntl(g_fd, F_SETFL, 0);
 
-  if (!g_fd)
+  if ((g_fd = open(g_dev, O_RDWR)) < 0)
   {
-    fprintf(stderr, "init: g_fd not open\n");
-    return 1;
+//      fprintf(stderr, "init: can't open %s\n", g_dev);
+      perror(g_dev);
+      exit(1);
+      return 1;
   }
   // set RTS:
   status = TIOCM_RTS;
