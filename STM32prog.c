@@ -650,6 +650,7 @@ int main(int argc, char *argv[])
 {
   //int cnt;
   int tmp1, tmp2;
+  int phelp = TRUE;
 
   memset(&g_cmds, 0, sizeof(g_cmds));
   g_cmds.num = -1;
@@ -663,9 +664,10 @@ int main(int argc, char *argv[])
     if (opt < 0)
       break;
 
+    phelp = FALSE;
+
     switch (opt)
     {
-    case 0:
     case 'h':
       help(argv[0]);
       break;
@@ -723,6 +725,8 @@ int main(int argc, char *argv[])
       break;
     }
   }
+  if (phelp)
+      help(argv[0]);
 
 exit:
   devclose();
