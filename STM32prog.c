@@ -714,7 +714,8 @@ int main(int argc, char *argv[])
 	g_speed = B4000000;
       break;
     case 'v':
-      cmdgid();
+      if (!cmdgid())
+        return -1;
       cmdgv();
       break;
     case 'p':
