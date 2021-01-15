@@ -37,8 +37,7 @@
 static int g_fd = 0;
 static uint8_t g_in;
 
-#define SPEED0 B57600
-static int g_speed = SPEED0 + 1;
+static int g_speed = 13;
 static char *g_dev = NULL;
 
 #define MAXCMDS 20
@@ -524,22 +523,38 @@ static int devopen(void)
 {
   int status;
   struct termios options;
-  static char *snames[] = {
-    "B57600",
-    "B115200",
-    "B230400",
-    "B460800",
-    "B500000",
-    "B576000",
-    "B921600",
-    "B1000000",
-    "B1152000",
-    "B1500000",
-    "B2000000",
-    "B2500000",
-    "B3000000",
-    "B3500000",
-    "B4000000"
+  static int speeds[] = {
+      0,
+      50,
+      75,
+      110,
+      134,
+      150,
+      200,
+      300,
+      600,
+      1200,
+      1800,
+      2400,
+      4800,
+      9600,
+      19200,
+      38400,
+      57600,
+      115200,
+      230400,
+      460800,
+      500000,
+      576000,
+      921600,
+      1000000,
+      1152000,
+      1500000,
+      2000000,
+      2500000,
+      3000000,
+      3500000,
+      4000000
   };
 
   void chkin(void)
@@ -591,8 +606,6 @@ static int devopen(void)
   ioctl(g_fd, TIOCMBIS, &status);
   usleep(40000);
 
-  fprintf(stderr, "UART speed: %s\n", snames[g_speed - SPEED0]);
-
   /* get the current options */
   tcgetattr(g_fd, &options);
 
@@ -610,8 +623,17 @@ static int devopen(void)
   options.c_cc[VTIME] = 1;
   //options.c_cc[VTIME] = 10;
 
-  //cfsetspeed(&options, B460800);
-  cfsetspeed(&options, g_speed);
+  if (g_speed < 16)
+      cfsetspeed(&options, g_speed);
+  else
+      cfsetspeed(&options, 0x1000 + g_speed - 15);
+
+  g_speed = cfgetospeed(&options);
+  if (g_speed < 16)
+      fprintf(stderr, "%i\n", g_speed[speeds]);
+  else
+      fprintf(stderr, "%i\n", (g_speed - 0x1000 + 15)[speeds]);
+
 
   /* set the options */
   tcsetattr(g_fd, TCSANOW, &options);
@@ -709,9 +731,9 @@ int main(int argc, char *argv[])
     case 's':
       if (sscanf(optarg, "%d", &tmp1) != 1)
 	help(argv[0]);
-      g_speed = SPEED0 + tmp1;
-      if (g_speed > B4000000)
-	g_speed = B4000000;
+      g_speed = tmp1;
+      if (g_speed > 30)
+          g_speed = 30;
       break;
     case 'v':
       if (!cmdgid())
