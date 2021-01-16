@@ -37,7 +37,7 @@
 static int g_fd = 0;
 static uint8_t g_in;
 
-static int g_speed = 13;
+static int g_speed = 17;
 static char *g_dev = NULL;
 
 #define MAXCMDS 20
@@ -629,6 +629,7 @@ static int devopen(void)
       cfsetspeed(&options, 0x1000 + g_speed - 15);
 
   g_speed = cfgetospeed(&options);
+  fprintf(stderr, "IO speed: ");
   if (g_speed < 16)
       fprintf(stderr, "%i\n", g_speed[speeds]);
   else
