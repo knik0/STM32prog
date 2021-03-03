@@ -320,9 +320,12 @@ static int cmdwm(uint32_t addr32)
   len = fread(buf, 1, 0x100, stdin);
   while (1)
   {
+    int retry = 0;
+
     if (len < 1)
       break;
 
+send:
     fprintf(stderr, "sending WriteMemory(%08x,%x)\n", addr32, len);
     send(CMDWM);
     send(~CMDWM);
@@ -362,7 +365,16 @@ static int cmdwm(uint32_t addr32)
     tmp = fread(buf, 1, 0x100, stdin);
 
     if (!getack())
-      return FALSE;
+    {
+	usleep(10000 * retry);
+	if (++retry < 5)
+	    goto send;
+	else
+	{
+	    fprintf(stderr, "CMDWM failed\n");
+	    return FALSE;
+	}
+    };
 
     addr32 += len;
     len = tmp;
