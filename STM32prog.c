@@ -97,10 +97,21 @@ static inline int send(uint8_t byte)
 
 static int getack(void)
 {
-  //fprintf(stderr, "waiting for ACK\n");
+  int wait = 10;
 
+wait:
   if (recv())
+  {
+    if (wait < 100)
+    {
+      fprintf(stderr, "waiting for ACK\n");
+      usleep(10000);
+      wait *= 2;
+      goto wait;
+    }
+
     return FALSE;
+  }
 
   if (g_in != ACK)
   {
@@ -328,7 +339,10 @@ static int cmdwm(uint32_t addr32)
     send(~CMDWM);
 
     if (!getack())
+    {
+      fprintf(stderr, "CMDWM cmd failed\n");
       return FALSE;
+    };
 
     for (cnt = 0; cnt < 4; cnt++)
       addr[cnt] = addr32 >> (cnt * 8);
@@ -342,7 +356,10 @@ static int cmdwm(uint32_t addr32)
     }
     send(xsum);
     if (!getack())
+    {
+      fprintf(stderr, "CMDWM send(xsum) failed\n");
       return FALSE;
+    };
 
     xsum = 0;
     len--;
@@ -658,7 +675,7 @@ static void help(char *name)
 	    " -d <devname>\topen device\n"
 	    " -i\t\tinit data connection\n"
 	    " -v\t\tget version\n"
-	    " -r <addr,len>\tRead Memory to stdout\n"
+	    " -r <addr>\tRead Memory to stdout\n"
 	    " -e\t\tGlobal Erase\n"
 	    " -w <addr,len>\tWrite Memory from stdin\n"
 	    " -g <addr>\tJump to address\n"
