@@ -95,6 +95,7 @@ static inline int send(uint8_t byte)
 }
 
 
+static int g_ackwait = 100;
 static int getack(void)
 {
   int wait = 10;
@@ -102,10 +103,10 @@ static int getack(void)
 wait:
   if (recv())
   {
-    if (wait < 100)
+    if (wait < g_ackwait)
     {
       fprintf(stderr, "waiting for ACK\n");
-      usleep(10000);
+      usleep(1000*wait);
       wait *= 2;
       goto wait;
     }
@@ -423,6 +424,8 @@ static int cmder(void)
       send(0);
   }
 
+  g_ackwait = 2000;
+
   if (!getack())
     return FALSE;
 
@@ -521,6 +524,7 @@ static int init(void)
   fprintf(stderr, "sending initial 0x7f\n");
   send(0x7f);
 
+  g_ackwait = 40;
 #if 0
   // read pending input:
   if (recv())
